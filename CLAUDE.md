@@ -1,8 +1,12 @@
 # LLM Wiki — 个人知识库 Schema
 
+个人知识库 Schema
+
+> **CRITICAL:** 这是个人 Wiki 知识库。所有 wiki 相关操作（摄入、查询、更新、检查）必须通过对应的 wiki skill 执行。详见下方"Wiki Skill 自动触发规则"。
+
 ## 这是什么
 
-一个由 AI 持续维护的结构化个人知识库。
+个人 LLM Wiki —— 一个由 AI 持续维护的结构化知识库。
 原始素材永远不动，wiki 层由 AI 增量构建并保持互联。
 
 今天的日期: {{currentDate}}
@@ -13,10 +17,14 @@
 
 ```
 raw/          原始素材（只读，永远不要修改）
-wiki/         AI 维护的 wiki 页面（每主题一个 .md 文件）
+
+
+wiki/         AI 维护的 wiki 页面
+  pages/      主题页面（每主题一个 .md 文件）
+  index.md    全库索引（表格格式，每次 ingest 后更新）
+  log.md      操作日志（追加写入，不修改历史）
+
 concepts/     生成的报告、分析、答案页面
-index.md      全库索引（每次 ingest 后更新）
-log.md        操作日志（追加写入，不修改历史）
 ```
 
 ---
@@ -40,77 +48,100 @@ updated: YYYY-MM-DD
 
 ---
 
-## 操作流程
+## Wiki Skill 自动触发规则（强制执行）
 
-### Ingest（摄入新素材）
+<CRITICAL>
+在处理本知识库时，必须根据以下条件自动调用对应的 wiki skill。这是强制性的，不是可选的。
+</CRITICAL>
 
-当用户说"摄入"或"处理"某个文件时：
+### wiki-ingest（摄入新素材）
 
-1. 读取 `raw/` 中的源文件（不修改原文）
-2. 与用户讨论关键要点（可选）
-3. **网络补充**（推荐）：对核心概念或关键主张，调用 `agent-browser` skill 检索当前权威来源，补充本地文件可能缺失的最新信息。优先按类别选择来源：
-   - **通用概念**：en.wikipedia.org / zh.wikipedia.org
-   - **技术/编程**：docs.python.org、developer.mozilla.org、arxiv.org、github.com
-   - **AI/ML 论文**：arxiv.org、paperswithcode.com、huggingface.co
-   - **新闻/时事**：reuters.com、bbc.com、theguardian.com
-   - **学术**：scholar.google.com、semanticscholar.org
-   - **官方文档**：优先访问主题的官网
-4. 在 `wiki/` 中写或更新相关主题页面，**标注来源**：本地文件来源用文件路径，网络来源用 URL
-5. 更新 `index.md`（添加或修改条目）
-6. 在 `log.md` 追加一条记录，格式：
-   ```
-   ## [YYYY-MM-DD] ingest | 文件名或标题
-   - 新建/更新的 wiki 页面：xxx, yyy
-   - 网络查证：是/否，来源：url
-   - 关键发现：...
-   ```
+**TRIGGER when:**
 
-一次摄入可能触及 5–15 个 wiki 页面，这是正常的。
+- 用户提供 URL、文件路径、或粘贴的文本要求处理
+- 用户说"摄入"、"处理"、"添加到 wiki"、"把 X 加入知识库"
+- 用户提到 raw/ 目录下的新文件
+- 用户分享论文、文章、笔记内容
 
-### Query（查询）
+**ACTION:** 立即调用 `wiki-ingest` skill，不要自己处理。
 
-当用户提问时：
+### wiki-query（查询知识）
 
-1. 先读 `index.md`，找到相关页面
-2. 读取相关 wiki 页面
-3. 若本地 wiki 信息不足或需要验证时效性内容，调用 `agent-browser` skill 检索当前来源（优先权威站点，同上）
-4. 综合回答，注明引用来源（`[[page-name]]` 用于本地页面，URL 用于网络来源）
-5. 如果答案有价值，将其存入 `concepts/` 作为独立页面，并更新 `index.md`
-6. 在 `log.md` 追加一条记录，格式：
-   ```
-   ## [YYYY-MM-DD] query | 问题摘要
-   - 查阅页面：xxx, yyy
-   - 网络查证：是/否，来源：url
-   - 生成 concept 页面：是/否，路径：concepts/xxx.md
-   - 关键结论：...
-   ```
+**TRIGGER when:**
 
-### Lint（健康检查）
+- 用户提问关于 wiki 中的知识
+- 用户说"查一下"、"wiki 里有什么关于"、"帮我了解"
+- 问题涉及已存在于 wiki 的主题（先读 wiki/index.md 判断）
 
-当用户说"检查 wiki"或"lint"时：
+**ACTION:** 立即调用 `wiki-query` skill，不要从通用知识回答。
 
-1. 扫描 wiki 页面，找出：
-   - 互相矛盾的内容
-   - 已被新素材推翻的旧结论
-   - 孤立页面（没有其他页面指向它）
-   - 重要概念被多次提及但没有独立页面
-   - 缺失的交叉引用
-2. 输出一份检查报告，建议修复动作
-3. 在 `log.md` 追加检查记录（无论是否执行修复），格式：
-   ```
-   ## [YYYY-MM-DD] lint | wiki 健康检查
-   - 发现问题：断链 N 处、孤立页面 N 个、缺失页面 N 个
-   - 新建页面：xxx, yyy（若有）
-   - 修复断链：文件 → 链接（若有）
-   - 修复孤立：文件 → 添加了引用（若有）
-   - 其他修复：...（若无修复则填"仅输出报告，待处理"）
-   ```
+### wiki-lint（健康检查）
+
+**TRIGGER when:**
+
+- 用户说"检查 wiki"、"lint"、"健康检查"
+- 每 5-10 次 ingest 操作后主动建议执行
+- wiki 结构可能有问题时（孤立页面、断链）
+
+**ACTION:** 立即调用 `wiki-lint` skill。
+
+### wiki-update（更新页面）
+
+**TRIGGER when:**
+
+- 用户说"更新"、"修改"某个 wiki 页面
+- 新信息与现有内容冲突
+- 知识需要修正或补充
+
+**ACTION:** 立即调用 `wiki-update` skill。
+
+---
+
+## Skill 调用优先级
+
+1. **先判断是否匹配触发条件** — 不确定时，优先调用 skill
+2. **不要猜测** — 如果用户意图可能涉及 wiki，先调用对应 skill
+3. **skill 内容是权威** — skill 内的流程覆盖本文件的简略描述
+
+---
+
+## agent-browser 网络补充规则（强制执行）
+
+<CRITICAL>
+当本地 wiki 信息不足或需要验证时效性内容时，必须调用 `agent-browser` skill 进行网络搜索补充。不要凭通用知识回答。
+</CRITICAL>
+
+**TRIGGER when:**
+
+- wiki 中没有相关页面或信息不完整
+- 内容涉及时效性（版本、日期、当前状态）
+- 需要验证 wiki 中的信息是否仍然准确
+- 用户明确要求查证或补充
+
+**权威来源优先级（按类别）：**
+
+
+| 类别       | 优先来源                                                      |
+| ---------- | ------------------------------------------------------------- |
+| 通用概念   | en.wikipedia.org, zh.wikipedia.org                            |
+| 技术/编程  | docs.python.org, developer.mozilla.org, arxiv.org, github.com |
+| AI/ML 论文 | arxiv.org, paperswithcode.com, huggingface.co                 |
+| 新闻/时事  | reuters.com, bbc.com, theguardian.com                         |
+| 学术       | scholar.google.com, semanticscholar.org                       |
+| 官方文档   | 优先使用该技术/产品的官方网站                                 |
+
+**ACTION:**
+
+1. 调用 `agent-browser` skill
+2. 按上述优先级选择搜索来源
+3. 将获取的信息整合进回答，并标注来源 URL
+4. 如果有价值，建议将新信息摄入 wiki
 
 ---
 
 ## Index 维护规则
 
-`index.md` 是全库导航枢纽，结构如下：
+`wiki/index.md` 是全库导航枢纽，结构如下：
 
 ```markdown
 # Index
@@ -130,23 +161,16 @@ updated: YYYY-MM-DD
 
 ---
 
-## 可用工具
+## Log 维护规则
 
-### agent-browser（浏览器自动化，可选）
+`wiki/log.md` 是追加式操作记录，格式：
 
-用于补充本地文件缺乏的实时信息。需要单独安装：
-
-- macOS: `brew install mediar-ai/agent-browser/agent-browser`
-- 或参考：https://github.com/mediar-ai/agent-browser
-
-安装后，使用时调用 `agent-browser` skill 获取完整用法。
-
-**使用时机：**
-
-- 原始素材有 URL 引用但无本地副本时
-- wiki 内容需要验证当前状态时
-- 查询涉及时效性信息（版本、日期、当前状态）时
-- 生成 concept 页面需要多角度来源时
+```markdown
+## [YYYY-MM-DD] <操作类型> | <标题>
+- 相关页面：xxx, yyy
+- 网络查证：是/否，来源：url
+- 关键发现/结论：...
+```
 
 ---
 
