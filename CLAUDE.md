@@ -13,13 +13,6 @@
 
 ```
 raw/          原始素材（只读，永远不要修改）
-  Clippings/  网页剪藏（Obsidian Web Clipper 输出）
-  学习笔记/   手写笔记、课程内容
-  个人/       日记、反思、个人记录
-  Daily-Updates/ 每日更新
-  Notion/     从 Notion 导出的内容
-  save_pages/ 保存的网页
-
 wiki/         AI 维护的 wiki 页面（每主题一个 .md 文件）
 concepts/     生成的报告、分析、答案页面
 index.md      全库索引（每次 ingest 后更新）
@@ -142,12 +135,14 @@ updated: YYYY-MM-DD
 ### agent-browser（浏览器自动化，可选）
 
 用于补充本地文件缺乏的实时信息。需要单独安装：
+
 - macOS: `brew install mediar-ai/agent-browser/agent-browser`
 - 或参考：https://github.com/mediar-ai/agent-browser
 
 安装后，使用时调用 `agent-browser` skill 获取完整用法。
 
 **使用时机：**
+
 - 原始素材有 URL 引用但无本地副本时
 - wiki 内容需要验证当前状态时
 - 查询涉及时效性信息（版本、日期、当前状态）时
