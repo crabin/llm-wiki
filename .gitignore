@@ -4,7 +4,7 @@
 .LSOverride
 
 # Personal raw content (do not commit private notes)
-raw/
+raw/*
 
 # Editor
 .obsidian/
