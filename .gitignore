@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Personal raw content (do not commit private notes)
+raw/
+
+# Editor
+.obsidian/
+.vscode/
+
+# Logs (optional — remove this line if you want to track log history)
+# log.md
