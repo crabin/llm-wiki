@@ -63,13 +63,15 @@ cd my-wiki
 claude .
 ```
 
+如果需要兼容其他 agent，可从 `AGENTS.md` 和 `.agents/skills/` 开始；Claude Code 继续使用 `CLAUDE.md` 和 `.claude/skills/`。
+
 ### 开始使用
 
 1. **初始化**：在 Claude Code 中说"初始化 wiki"（仅首次需要）
 2. **放入原始素材**：将你的笔记、PDF、网页剪藏放入 `raw/` 的对应子目录
 3. **摄入**：说"摄入 raw/xxx.md"或提供 URL/文本
 4. **查询**：直接提问，AI 会查阅 wiki 并回答
-5. **健康检查**：说"检查 wiki"，AI 扫描并修复断链、孤立页面等问题
+5. **健康检查**：说"检查 wiki"，AI 扫描断链、孤立页面等问题，并按 skill 流程提出或执行修复
 
 ---
 
@@ -77,9 +79,18 @@ claude .
 
 ```
 llm-wiki/
-├── CLAUDE.md          # AI 行为规范（核心配置）
+├── AGENTS.md          # 跨 agent 入口与兼容说明
+├── CLAUDE.md          # Claude 专用行为规范（核心配置）
+├── .agents/
+│   └── skills/        # 供其他 agents/tools 使用的兼容引用
+│       ├── agent-browser/
+│       ├── wiki-init/
+│       ├── wiki-ingest/
+│       ├── wiki-query/
+│       ├── wiki-lint/
+│       └── wiki-update/
 ├── .claude/
-│   └── skills/        # 自定义 skills
+│   └── skills/        # canonical skill 定义
 │       ├── agent-browser/   # 浏览器自动化
 │       ├── wiki-init/       # 初始化 wiki
 │       ├── wiki-ingest/     # 摄入新素材
@@ -110,7 +121,7 @@ llm-wiki/
 
 ```
 你：初始化 wiki
-AI：询问配置 → 创建目录结构 → 写入 CLAUDE.md → 初始化 index.md 和 log.md
+AI：询问配置 → 创建目录结构 → 写入 CLAUDE.md 和 AGENTS.md → 初始化 index.md 和 log.md
 ```
 
 ### Ingest（摄入）
@@ -191,9 +202,12 @@ updated: 2026-04-06
 
 ## Skills 说明
 
+`AGENTS.md` 和 `.agents/skills/` 是面向非 Claude agents 的兼容入口，canonical skill 定义仍然保存在 `.claude/skills/` 中。
+
+
 ### wiki-init
 
-初始化一个新的 wiki 知识库，适用于任何知识领域（研究、代码文档、读书笔记、竞品分析等）。交互式询问配置（路径、领域、素材类型、索引分类），创建目录结构，写入 `CLAUDE.md`、`index.md`、`log.md`。
+初始化一个新的 wiki 知识库，适用于任何知识领域（研究、代码文档、读书笔记、竞品分析等）。交互式询问配置（路径、领域、素材类型、索引分类），创建目录结构，写入 `CLAUDE.md`、`AGENTS.md`、`index.md`、`log.md`，并建立回指 `.claude/skills/` 的 `.agents/skills/` 兼容层。
 
 ### wiki-ingest
 

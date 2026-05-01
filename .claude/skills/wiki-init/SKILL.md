@@ -28,7 +28,12 @@ Ask:
 
 ```
 <wiki-root>/
-├── CLAUDE.md         ← conventions + absolute path (how other skills find the wiki)
+├── AGENTS.md         ← cross-agent entrypoint and compatibility guidance
+├── CLAUDE.md         ← Claude-specific conventions + absolute path
+├── .agents/
+│   └── skills/       ← compatibility references for other agents/tools
+├── .claude/
+│   └── skills/       ← canonical skill definitions
 ├── raw/              ← immutable source documents (you add these, LLM never modifies)
 ├── wiki/
 │   ├── index.md      ← content catalog: table format with page, summary, tags, updated
@@ -58,6 +63,10 @@ Today's date: {{currentDate}}
 ## Directory Structure
 
 ```
+AGENTS.md     Cross-agent entrypoint and compatibility guidance
+
+.claude/      Canonical Claude-facing skill definitions
+.agents/      Compatibility skill references for other agents/tools
 raw/          Raw sources (read-only, never modify)
 
 wiki/         AI-maintained wiki pages
@@ -167,7 +176,22 @@ Format: \`## [YYYY-MM-DD] <operation> | <title>\`
 - **Preserve good analysis**: Save valuable answers to `concepts/`
 ```
 
-### 4. Write `wiki/index.md`
+### 4. Write `AGENTS.md`
+
+Create a concise, tool-agnostic `AGENTS.md` that:
+
+- explains the repo purpose and the roles of `raw/`, `wiki/`, and `concepts/`
+- states that `CLAUDE.md` contains Claude-specific workflow rules
+- states that `.claude/skills/` is the canonical skill definition location
+- states that `.agents/skills/` is a compatibility layer for other agents/tools
+- tells maintainers not to duplicate or fork skill content inside `.agents/skills/`
+
+### 5. Create `.agents/skills/` compatibility references
+
+Create thin compatibility references for each public skill under `.agents/skills/<skill>/SKILL.md`.
+Each file should point back to the canonical local `.claude/skills/<skill>/SKILL.md` file instead of copying the full content.
+
+### 6. Write `wiki/index.md`
 
 ```markdown
 # Index
@@ -183,10 +207,7 @@ Format: \`## [YYYY-MM-DD] <operation> | <title>\`
 | (No saved analysis pages yet) | - | - |
 
 ## Topic Relations
-
-```
 (To be populated)
-```
 
 ## Quick Navigation
 
@@ -194,7 +215,7 @@ Format: \`## [YYYY-MM-DD] <operation> | <title>\`
 (To be populated)
 ```
 
-### 5. Write `wiki/log.md`
+### 7. Write `wiki/log.md`
 
 ```markdown
 # Operation Log
@@ -207,20 +228,23 @@ Format: `## [YYYY-MM-DD] <operation> | <title>`
 
 ## [<today>] init | <domain>
 - Created CLAUDE.md schema
+- Created AGENTS.md compatibility guide
 - Initialized log.md
 ```
 
-### 6. Create `concepts/` directory
+### 8. Create `concepts/` directory
 
 ```bash
 mkdir -p concepts
 ```
 
-### 7. Confirm
+### 9. Confirm
 
 Tell the user:
 
 - Wiki initialized at `<path>`
 - Add sources to `raw/` manually, or run `wiki-ingest` directly with a URL or file path
 - Run `wiki-lint` periodically to keep the wiki healthy
-- `CLAUDE.md` is how all other skills locate this wiki — do not move or delete it
+- `CLAUDE.md` contains Claude-specific rules for this wiki
+- `AGENTS.md` and `.agents/skills/` provide cross-agent compatibility entrypoints
+- `.claude/skills/` remains the canonical skill source of truth

@@ -63,13 +63,15 @@ Claude Code でプロジェクトを開く：
 claude .
 ```
 
+他の agent との互換運用では `AGENTS.md` と `.agents/skills/` を入口として使えます。Claude Code は引き続き `CLAUDE.md` と `.claude/skills/` を使用します。
+
 ### 使い方
 
 1. **初期化**：Claude Code に「wiki を初期化して」と伝える（初回のみ）
 2. **素材を追加**：ノート、PDF、Webクリッピングを `raw/` の適切なサブディレクトリに配置
 3. **取り込み（Ingest）**：「raw/xxx.md を取り込んで」または URL/テキストを提供
 4. **クエリ（Query）**：直接質問するだけ — AI が wiki を参照して回答
-5. **ヘルスチェック（Lint）**：「wiki を確認して」と言うと、AI がリンク切れや孤立ページを修正
+5. **ヘルスチェック（Lint）**：「wiki を確認して」と言うと、AI がリンク切れや孤立ページを検出し、skill の手順に従って修正案提示または修正を行う
 
 ---
 
@@ -77,9 +79,18 @@ claude .
 
 ```
 llm-wiki/
-├── CLAUDE.md          # AI 動作ルール（中核設定）
+├── AGENTS.md          # クロスエージェント用の入口と互換ガイド
+├── CLAUDE.md          # Claude 専用の動作ルール（中核設定）
+├── .agents/
+│   └── skills/        # 他の agent/tools 向けの互換参照
+│       ├── agent-browser/
+│       ├── wiki-init/
+│       ├── wiki-ingest/
+│       ├── wiki-query/
+│       ├── wiki-lint/
+│       └── wiki-update/
 ├── .claude/
-│   └── skills/        # カスタムスキル
+│   └── skills/        # canonical skill 定義
 │       ├── agent-browser/   # ブラウザ自動化
 │       ├── wiki-init/       # wiki 初期化
 │       ├── wiki-ingest/     # 新規取り込み
@@ -110,7 +121,7 @@ llm-wiki/
 
 ```
 あなた：wiki を初期化して
-AI：設定を確認 → ディレクトリ構造を作成 → CLAUDE.md を書く → index.md と log.md を初期化
+AI：設定を確認 → ディレクトリ構造を作成 → CLAUDE.md と AGENTS.md を書く → index.md と log.md を初期化
 ```
 
 ### 取り込み（Ingest）
@@ -191,9 +202,12 @@ updated: 2026-04-06
 
 ## スキルリファレンス
 
+`AGENTS.md` と `.agents/skills/` は Claude 以外の agent 向け互換入口です。canonical な skill 定義は `.claude/skills/` にあります。
+
+
 ### wiki-init
 
-あらゆる知識ドメイン（研究、コードドキュメント、読書ノート、競合分析など）に対応する新しい wiki 知識ベースを初期化。対話形式で設定（パス、ドメイン、ソースタイプ、インデックスカテゴリ）を確認し、ディレクトリ構造を作成し、`CLAUDE.md`、`index.md`、`log.md` を書く。
+あらゆる知識ドメイン（研究、コードドキュメント、読書ノート、競合分析など）に対応する新しい wiki 知識ベースを初期化。対話形式で設定（パス、ドメイン、ソースタイプ、インデックスカテゴリ）を確認し、ディレクトリ構造を作成し、`CLAUDE.md`、`AGENTS.md`、`index.md`、`log.md` を書き、`.claude/skills/` を参照する `.agents/skills/` 互換レイヤーを用意する。
 
 ### wiki-ingest
 

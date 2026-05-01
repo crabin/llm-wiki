@@ -63,13 +63,15 @@ Open with Claude Code:
 claude .
 ```
 
+For cross-agent setups, generic agents can start from `AGENTS.md` and `.agents/skills/`, while Claude Code continues to use `CLAUDE.md` and `.claude/skills/`.
+
 ### Usage
 
 1. **Initialize**: Tell Claude Code "initialize wiki" (first time only)
 2. **Add raw materials**: Put your notes, PDFs, or web clippings into the appropriate `raw/` subdirectory
 3. **Ingest**: Tell Claude Code "ingest raw/xxx.md" or provide a URL/text
 4. **Query**: Ask questions directly — the AI reads the wiki and answers
-5. **Health check**: Say "check wiki" — the AI scans and fixes broken links, isolated pages, etc.
+5. **Health check**: Say "check wiki" — the AI scans for broken links, isolated pages, and similar issues, then proposes or applies fixes per the skill workflow.
 
 ---
 
@@ -77,9 +79,18 @@ claude .
 
 ```
 llm-wiki/
-├── CLAUDE.md          # AI behavior rules (core config)
+├── AGENTS.md          # Cross-agent entrypoint and compatibility guidance
+├── CLAUDE.md          # Claude-specific behavior rules (core config)
+├── .agents/
+│   └── skills/        # Compatibility references for other agents/tools
+│       ├── agent-browser/
+│       ├── wiki-init/
+│       ├── wiki-ingest/
+│       ├── wiki-query/
+│       ├── wiki-lint/
+│       └── wiki-update/
 ├── .claude/
-│   └── skills/        # Custom skills
+│   └── skills/        # Canonical skill definitions
 │       ├── agent-browser/   # Browser automation
 │       ├── wiki-init/       # Initialize wiki
 │       ├── wiki-ingest/     # Ingest new sources
@@ -110,7 +121,7 @@ Initialize the wiki structure on first use:
 
 ```
 You:  initialize wiki
-AI:   Ask configuration → Create directory structure → Write CLAUDE.md → Initialize index.md and log.md
+AI:   Ask configuration → Create directory structure → Write CLAUDE.md and AGENTS.md → Initialize index.md and log.md
 ```
 
 ### Ingest
@@ -191,9 +202,12 @@ updated: 2026-04-06
 
 ## Skills Reference
 
+`AGENTS.md` and `.agents/skills/` are compatibility entrypoints for non-Claude agents. Canonical skill definitions remain in `.claude/skills/`.
+
+
 ### wiki-init
 
-Initialize a new wiki knowledge base for any knowledge domain (research, codebase docs, reading notes, competitive analysis, etc.). Interactively asks for configuration (path, domain, source types, index categories), creates directory structure, writes `CLAUDE.md`, `index.md`, `log.md`.
+Initialize a new wiki knowledge base for any knowledge domain (research, codebase docs, reading notes, competitive analysis, etc.). Interactively asks for configuration (path, domain, source types, index categories), creates directory structure, writes `CLAUDE.md`, `AGENTS.md`, `index.md`, `log.md`, and sets up `.agents/skills/` as a compatibility layer that points back to `.claude/skills/`.
 
 ### wiki-ingest
 
