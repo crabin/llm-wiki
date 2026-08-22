@@ -1,3 +1,5 @@
+
+
 # LLM Wiki — AI 驱动的个人知识库
 
 **语言 / Language / 言語：** 中文（默认）｜ [English](README.en.md) ｜ [日本語](README.ja.md)
@@ -105,7 +107,7 @@ llm-wiki/
 ├── wiki/              # AI 维护的 wiki 页面
 │   ├── index.md       # 全库索引（表格格式）
 │   ├── log.md         # 操作日志（追加写入）
-│   └── pages/         # 主题页面（每主题一个 .md）
+│   └── pages/         # 主题页面（每主题一个 .md，扁平无子目录）
 │       ├── topic-a.md
 │       └── topic-b.md
 └── concepts/          # 生成的分析报告、答案页面
